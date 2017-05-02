@@ -162,10 +162,21 @@ describe('loopback.token(options)', function() {
     });
   });
 
-  it('should populate req.token from an authorization header with bearer token', function(done) {
+  it('should populate req.token from an authorization header with bearer token with base64',
+  function(done) {
     var token = this.token.id;
     token = 'Bearer ' + new Buffer(token).toString('base64');
     createTestAppAndRequest(this.token, done)
+      .get('/')
+      .set('authorization', token)
+      .expect(200)
+      .end(done);
+  });
+
+  it('should populate req.token from an authorization header with bearer token', function(done) {
+    var token = this.token.id;
+    token = 'Bearer ' + token;
+    createTestAppAndRequest(this.token, {token: {bearerTokenBase64Encoded: false}}, done)
       .get('/')
       .set('authorization', token)
       .expect(200)
@@ -461,6 +472,11 @@ describe('loopback.token(options)', function() {
 
 describe('AccessToken', function() {
   beforeEach(createTestingToken);
+
+  it('should have getAccessTokenId method', function() {
+    assert(typeof Token.getAccessTokenId === 'function');
+    assert(typeof Token.findForRequest === 'function');
+  });
 
   it('should auto-generate id', function() {
     assert(this.token.id);
